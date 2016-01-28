@@ -22,7 +22,7 @@ PUUSH_API_URL = "https://puush.me/api/"
 
 def api_request(endpoint, **kwargs):
     r = requests.post(urljoin(PUUSH_API_URL, endpoint), **kwargs)
-    return [line.split(',') for line in r.text.split('\n')]
+    return [line.split(',') for line in r.text.strip().split('\n')]
 
 def auth(email, password):
     res = api_request('auth', data={
@@ -105,6 +105,17 @@ class Account(object):
         if res[0] == '-1':
             raise PuushError("File deletion failed.")
 
+    def history(self):
+        res = self._api_request('hist')
+        if res[0][0] == '-1':
+            raise PuushError("History retrieval failed.")
+        
+        files = []
+        for line in res[1:]:
+            id, upload_time, url, filename, views, _ = line
+            files.append(self._File(id, url, filename, upload_time, views))
+        return files
+
 class File(object):
     """A file uploaded to a Puush account.
     
@@ -125,7 +136,7 @@ class File(object):
         self.views = int(views)
         
     def __repr__(self):
-        return "<Puush File {}: {}>".format(
+        return "<Puush File {}: \"{}\">".format(
             self.id,
             self.filename.encode(sys.stdout.encoding, 'replace')
         )
