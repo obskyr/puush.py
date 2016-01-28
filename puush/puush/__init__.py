@@ -8,8 +8,10 @@ from __future__ import unicode_literals
 A Python module to access the Puush (http://puush.me/) API.
 """
 
+import os
 import sys
 import requests
+from datetime import datetime
 
 if sys.version_info[0] >= 3:
     from urllib.parse import urljoin
@@ -48,6 +50,7 @@ class AuthenticationError(PuushError, ValueError):
     pass
 
 class Account(object):
+    """A Puush account."""
     def __init__(self, api_key_or_email, password=None):
         # E-mail and password authentication
         if password is not None:
@@ -62,9 +65,17 @@ class Account(object):
     def _api_request(self, endpoint, **kwargs):
         data = kwargs.pop('data', {})
         data.update({'k': self._api_key})
-        api_request(endpoint, data=data, **kwargs)
+        return api_request(endpoint, data=data, **kwargs)
+    
+    def _File(self, *args, **kwargs):
+        return File(account=self, *args, **kwargs)
     
     def upload(self, f):
+        """Upload a file to the account.
+        
+        Parameters:
+            * f: The file. Either a path to a file or a file-like object.
+        """
         if hasattr(f, 'read'):
             needs_closing = False
         else:
@@ -78,7 +89,39 @@ class Account(object):
             'f': f
         }
         
-        self._api_request('up', data=data, files=files)
+        res = self._api_request('up', data=data, files=files)[0]
+        if res[0] == '-1':
+            raise PuushError("File upload failed.")
         
         if needs_closing:
             f.close()
+        
+        _, url, id, size = res
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return self._File(id, url, os.path.basename(f.name), now, 0)
+
+class File(object):
+    """A file uploaded to a Puush account.
+    
+    Properties:
+        * id:          The unique Puush ID of the file.
+        * url:         The url to access the file.
+        * filename:    The file's original filename.
+        * upload_time: The file's upload time, formatted "YYYY-MM-DD HH:MM:SS".
+        * views:       How many times the file has been accessed.
+    """
+    def __init__(self, id, url, filename, upload_time, views, account):
+        self._account = account
+        
+        self.id = id
+        self.url = url
+        self.filename = filename
+        self.upload_time = upload_time
+        self.views = int(views)
+        
+    def __repr__(self):
+        return "<Puush File {}: {}>".format(
+            self.id,
+            self.filename.encode(sys.stdout.encoding, 'replace')
+        )
+        
