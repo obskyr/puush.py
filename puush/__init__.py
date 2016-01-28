@@ -1,4 +1,6 @@
-"""puush.py, a Python wrapper for the Puush API. 
+"""puush.py
+
+A Python module for the Puush (http://puush.me/) API.
 
 Usage:
     import puush
@@ -8,4 +10,6 @@ Usage:
     account.upload("super_cool_picture.png")
 """
 
-from .puush import Account, PuushError, AuthenticationError
+# File really only in here for help() and dir()'s sake.
+
+from .puush import Account, File, PuushError, AuthenticationError

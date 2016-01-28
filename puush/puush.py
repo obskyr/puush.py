@@ -3,11 +3,6 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-"""puush.py
-
-A Python module to access the Puush (http://puush.me/) API.
-"""
-
 import os
 import sys
 import requests
@@ -179,7 +174,7 @@ class File(object):
     
     Properties:
         * id:          The unique Puush ID of the file.
-        * url:         The url to access the file.
+        * url:         The URL to access the file.
         * filename:    The file's original filename.
         * upload_time: The file's upload time, formatted "YYYY-MM-DD HH:MM:SS".
         * views:       How many times the file has been accessed.
@@ -205,5 +200,5 @@ class File(object):
         self._account.delete(self.id)
     
     def thumbnail(self):
-        """Get the 100x100 thumbnail of a file. Return the raw PNG data."""
+        """Get the 100x100 thumbnail of the file. Return the raw PNG data."""
         return self._account.thumbnail(self.id)
