@@ -56,13 +56,8 @@ class AuthenticationError(PuushError, ValueError):
     pass
 
 class Account(object):
-    """A Puush account.
+    """A Puush account."""
     
-    Properties:
-        * is_premium: True if the account is premium, False if not.
-                      Only available if instantiated with e-mail and password,
-                      set to None if API key was used.
-    """
     def __init__(self, api_key_or_email, password=None):
         """A Puush Account can be instantiated either with API key or
         e-mail and password.
@@ -81,7 +76,25 @@ class Account(object):
         else:
             self._api_key = api_key_or_email
     
-    is_premium = None
+    @property
+    def is_premium(self):
+        """Whether the Puush account has premium status or not.
+        
+        True if the account is premium, False if not.
+        Only available if instantiated with e-mail and password.
+        """
+        try:
+            return self._is_premium
+        except AttributeError:
+            raise PuushError(
+                "Account.is_premium is unavailable, since the "
+                "Account was initialized with an API key "
+                "and not login credentials."
+            )
+    
+    @is_premium.setter
+    def is_premium(self, value):
+        self._is_premium = value
     
     def _raw_api_request(self, endpoint, **kwargs):
         data = kwargs.pop('data', {})
@@ -97,7 +110,7 @@ class Account(object):
         return File(account=self, *args, **kwargs)
     
     def upload(self, f):
-        """Upload a file to the account.
+        """Upload a file to the Puush account.
         
         Parameters:
             * f: The file. Either a path to a file or a file-like object.
@@ -109,7 +122,7 @@ class Account(object):
             needs_closing = True
         
         data = {
-            'z': 'meaningless io  oisd lksdslk mksd\n\nds fiom'
+            'z': 'meaningless'
         }
         files = {
             'f': f
