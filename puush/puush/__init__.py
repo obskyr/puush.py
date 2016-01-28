@@ -99,6 +99,11 @@ class Account(object):
         _, url, id, size = res
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         return self._File(id, url, os.path.basename(f.name), now, 0)
+    
+    def delete(self, id):
+        res = self._api_request('del', data={'i': id})[0]
+        if res[0] == '-1':
+            raise PuushError("File deletion failed.")
 
 class File(object):
     """A file uploaded to a Puush account.
@@ -124,4 +129,6 @@ class File(object):
             self.id,
             self.filename.encode(sys.stdout.encoding, 'replace')
         )
-        
+    
+    def delete(self):
+        self._account.delete(self.id)
