@@ -15,8 +15,10 @@ from datetime import datetime
 
 if sys.version_info[0] >= 3:
     from urllib.parse import urljoin
+    unicode_type = str
 else:
     from urlparse import urljoin
+    unicode_type = unicode
 
 PUUSH_API_URL = "https://puush.me/api/"
 
@@ -25,7 +27,7 @@ def raw_api_request(endpoint, **kwargs):
     return r.content
 
 def api_request(endpoint, **kwargs):
-    response = raw_api_request(endpoint, **kwargs)
+    response = unicode_type(raw_api_request(endpoint, **kwargs))
     return [line.split(',') for line in response.strip().split('\n')]
 
 def auth(email, password):
@@ -181,7 +183,8 @@ class File(object):
     def __repr__(self):
         return "<Puush File {}: \"{}\">".format(
             self.id,
-            self.filename.encode(sys.stdout.encoding, 'replace')
+            self.filename.encode(sys.stdout.encoding, 'replace').decode(
+                sys.stdout.encoding)
         )
     
     def delete(self):
