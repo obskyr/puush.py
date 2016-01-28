@@ -20,9 +20,13 @@ else:
 
 PUUSH_API_URL = "https://puush.me/api/"
 
-def api_request(endpoint, **kwargs):
+def raw_api_request(endpoint, **kwargs):
     r = requests.post(urljoin(PUUSH_API_URL, endpoint), **kwargs)
-    return [line.split(',') for line in r.text.strip().split('\n')]
+    return r.content
+
+def api_request(endpoint, **kwargs):
+    response = raw_api_request(endpoint, **kwargs)
+    return [line.split(',') for line in response.strip().split('\n')]
 
 def auth(email, password):
     res = api_request('auth', data={
@@ -61,6 +65,11 @@ class Account(object):
             self._api_key = api_key_or_email
     
     is_premium = None
+    
+    def _raw_api_request(self, endpoint, **kwargs):
+        data = kwargs.pop('data', {})
+        data.update({'k': self._api_key})
+        return raw_api_request(endpoint, data=data, **kwargs)
     
     def _api_request(self, endpoint, **kwargs):
         data = kwargs.pop('data', {})
@@ -104,6 +113,12 @@ class Account(object):
         res = self._api_request('del', data={'i': id})[0]
         if res[0] == '-1':
             raise PuushError("File deletion failed.")
+    
+    def thumbnail(self, id):
+        res = self._raw_api_request('thumb', data={'i': id})
+        if not res:
+            raise PuushError("Getting thumbnail failed.")
+        return res
 
     def history(self):
         res = self._api_request('hist')
@@ -134,7 +149,7 @@ class File(object):
         self.filename = filename
         self.upload_time = upload_time
         self.views = int(views)
-        
+    
     def __repr__(self):
         return "<Puush File {}: \"{}\">".format(
             self.id,
@@ -143,3 +158,6 @@ class File(object):
     
     def delete(self):
         self._account.delete(self.id)
+    
+    def thumbnail(self):
+        return self._account.thumbnail(self.id)
