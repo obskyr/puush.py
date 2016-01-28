@@ -54,8 +54,23 @@ class AuthenticationError(PuushError, ValueError):
     pass
 
 class Account(object):
-    """A Puush account."""
+    """A Puush account.
+    
+    Properties:
+        * is_premium: True if the account is premium, False if not.
+                      Only available if instantiated with e-mail and password,
+                      set to None if API key was used.
+    """
     def __init__(self, api_key_or_email, password=None):
+        """A Puush Account can be instantiated either with API key or
+        e-mail and password.
+        
+        Parameters:
+            * api_key_or_email: API key if it's the only argument, e-mail if
+              password parameter is present.
+            * password (optional): The password for the Puush account if
+              api_key_or_email is an e-mail address.
+        """
         # E-mail and password authentication
         if password is not None:
             email = api_key_or_email
@@ -92,7 +107,7 @@ class Account(object):
             needs_closing = True
         
         data = {
-            'z': 'meaningless'
+            'z': 'meaningless io  oisd lksdslk mksd\n\nds fiom'
         }
         files = {
             'f': f
@@ -110,17 +125,30 @@ class Account(object):
         return self._File(id, url, os.path.basename(f.name), now, 0)
     
     def delete(self, id):
+        """Delete a file.
+        
+        Parameters:
+            * id: The Puush ID of the file to delete.
+        """
         res = self._api_request('del', data={'i': id})[0]
         if res[0] == '-1':
             raise PuushError("File deletion failed.")
     
     def thumbnail(self, id):
+        """Get the 100x100 thumbnail of a file. Return the raw PNG data.
+        
+        Parameters:
+            * id: The Puush ID of the file to get the thumbnail of.
+        """
         res = self._raw_api_request('thumb', data={'i': id})
         if not res:
             raise PuushError("Getting thumbnail failed.")
         return res
 
     def history(self):
+        """Get the latest 10 files uploaded to the account.
+        Return a list of Puush File objects.
+        """
         res = self._api_request('hist')
         if res[0][0] == '-1':
             raise PuushError("History retrieval failed.")
@@ -157,7 +185,9 @@ class File(object):
         )
     
     def delete(self):
+        """Delete the file from Puush."""
         self._account.delete(self.id)
     
     def thumbnail(self):
+        """Get the 100x100 thumbnail of a file. Return the raw PNG data."""
         return self._account.thumbnail(self.id)
