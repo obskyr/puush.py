@@ -8,4 +8,4 @@ Usage:
     account.upload("super_cool_picture.png")
 """
 
-from .puush import Account
+from .puush import Account, PuushError, AuthenticationError
