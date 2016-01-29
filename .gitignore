@@ -1,1 +1,4 @@
 *.pyc
+build/
+dist/
+puush.py.egg-info/
