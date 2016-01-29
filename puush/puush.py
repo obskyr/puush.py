@@ -3,6 +3,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import hashlib
 import os
 import sys
 import requests
@@ -24,6 +25,13 @@ def raw_api_request(endpoint, **kwargs):
 def api_request(endpoint, **kwargs):
     response = unicode_type(raw_api_request(endpoint, **kwargs))
     return [line.split(',') for line in response.strip().split('\n')]
+
+def md5_file(f):
+    md5 = hashlib.md5()
+    for chunk in iter(lambda: f.read(8192), b''):
+        md5.update(chunk)
+    f.seek(0)
+    return md5.hexdigest()
 
 def auth(api_key_or_email, password=None):
     # E-mail and password authentication
@@ -138,9 +146,11 @@ class Account(object):
         # it won't work. It's better to let this Python API do that,
         # however, with the behavior probably intended in the desktop app.
         filename = os.path.basename(f.name).encode('ascii', 'replace')
+        md5 = md5_file(f)
         
         data = {
-            'z': 'meaningless'
+            'z': 'meaningless',
+            'c': md5
         }
         files = {
             'f': (filename, f)
@@ -149,6 +159,9 @@ class Account(object):
         res = self._api_request('up', data=data, files=files)[0]
         if res[0] == '-1':
             raise PuushError("File upload failed.")
+        elif res[0] == '-3':
+            raise PuushError("File upload failed: hash didn't match with "
+                "the file the server received.")
         
         if needs_closing:
             f.close()
