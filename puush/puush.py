@@ -25,15 +25,29 @@ def api_request(endpoint, **kwargs):
     response = unicode_type(raw_api_request(endpoint, **kwargs))
     return [line.split(',') for line in response.strip().split('\n')]
 
-def auth(email, password):
-    res = api_request('auth', data={
-        'e': email,
-        'p': password
-    })[0]
+def auth(api_key_or_email, password=None):
+    # E-mail and password authentication
+    if password is not None:
+        email = api_key_or_email
+        data = {
+            'e': email,
+            'p': password
+        }
+    # Direct API key authentication
+    else:
+        api_key = api_key_or_email
+        data = {
+            'k': api_key
+        }
+    
+    res = api_request('auth', data=data)[0]
     
     if res[0] == '-1':
-        raise AuthenticationError(
-            "No Puush account with the provided credentials.")
+        if password is not None:
+            raise AuthenticationError(
+                "No Puush account with the provided credentials.")
+        else:
+            raise AuthenticationError("Invalid API key.")
     
     is_premium = bool(int(res[0]))
     api_key = res[1]
@@ -70,6 +84,7 @@ class Account(object):
         # Direct API key authentication
         else:
             self._api_key = api_key_or_email
+            auth(self._api_key)
     
     @property
     def is_premium(self):
