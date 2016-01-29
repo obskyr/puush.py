@@ -130,12 +130,20 @@ class Account(object):
         else:
             f = open(f, 'rb')
             needs_closing = True
+        # The Puush server can't handle non-ASCII filenames.
+        # The official Puush desktop app actually substitutes ? for
+        # non-ISO-8859-1 characters, which helps some Unicode filenames,
+        # but some are still let through and encounter server errors.
+        # Try uploading a file named åäö.txt through the desktop app -
+        # it won't work. It's better to let this Python API do that,
+        # however, with the behavior probably intended in the desktop app.
+        filename = os.path.basename(f.name).encode('ascii', 'replace')
         
         data = {
             'z': 'meaningless'
         }
         files = {
-            'f': f
+            'f': (filename, f)
         }
         
         res = self._api_request('up', data=data, files=files)[0]
@@ -147,7 +155,7 @@ class Account(object):
         
         _, url, id, size = res
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        return self._File(id, url, os.path.basename(f.name), now, 0)
+        return self._File(id, url, filename, now, 0)
     
     def delete(self, id):
         """Delete a file.
