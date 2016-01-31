@@ -59,6 +59,10 @@ Also consider using ``puush.File.thumbnail`` if you already have a ``File``.
 '''''''''''''''''''''''''''''''
 Return a list of the Puush account's last 10 (or fewer, if the account has fewer) uploads. Each entry is a ``puush.File``.
 
+``puush.Account.is_premium``
+''''''''''''''''''''''''''''
+``True`` if the account has premium status, ``False`` if not.
+
 -----------------------------------------------------
 
 ``puush.File(id, url, filename, upload_time, views)``

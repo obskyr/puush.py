@@ -90,28 +90,8 @@ class Account(object):
             self.is_premium, self._api_key, _, _ = auth(email, password)
         # Direct API key authentication
         else:
-            self._api_key = api_key_or_email
-            auth(self._api_key)
-    
-    @property
-    def is_premium(self):
-        """Whether the Puush account has premium status or not.
-        
-        True if the account is premium, False if not.
-        Only available if instantiated with e-mail and password.
-        """
-        try:
-            return self._is_premium
-        except AttributeError:
-            raise PuushError(
-                "Account.is_premium is unavailable, since the "
-                "Account was initialized with an API key "
-                "and not login credentials."
-            )
-    
-    @is_premium.setter
-    def is_premium(self, value):
-        self._is_premium = value
+            api_key = api_key_or_email
+            self.is_premium, self._api_key, _, _ = auth(api_key)
     
     def _raw_api_request(self, endpoint, **kwargs):
         data = kwargs.pop('data', {})
