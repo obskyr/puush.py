@@ -11,10 +11,8 @@ from datetime import datetime
 
 if sys.version_info[0] >= 3:
     from urllib.parse import urljoin
-    unicode_type = str
 else:
     from urlparse import urljoin
-    unicode_type = unicode
 
 PUUSH_API_URL = "https://puush.me/api/"
 
@@ -23,7 +21,8 @@ def raw_api_request(endpoint, **kwargs):
     return r.content
 
 def api_request(endpoint, **kwargs):
-    response = unicode_type(raw_api_request(endpoint, **kwargs))
+    # ASCII here is fine as long as the Puush server only supports ASCII.
+    response = raw_api_request(endpoint, **kwargs).decode('ASCII')
     return [line.split(',') for line in response.strip().split('\n')]
 
 def md5_file(f):
@@ -146,6 +145,7 @@ class Account(object):
         # it won't work. It's better to let this Python API do that,
         # however, with the behavior probably intended in the desktop app.
         filename = os.path.basename(f.name).encode('ascii', 'replace')
+        filename = filename.decode('ascii') # Requests doesn't like bytes
         md5 = md5_file(f)
         
         data = {
