@@ -3,7 +3,7 @@
 
 from setuptools import setup
 
-VERSION = '1.0.1'
+VERSION = '1.1.0'
 
 REQUIREMENTS = [
     "requests >= 1.0.0"
@@ -18,6 +18,7 @@ setup(
     author="Samuel Messner",
     author_email="powpowd@gmail.com",
     url="https://github.com/obskyr/puush.py",
+    download_url="https://github.com/obskyr/puush.py/tarball/v" + VERSION,
     description="A Python module for the Puush (http://puush.me/) API.",
     long_description=long_description,
     license="MIT",
